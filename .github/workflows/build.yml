@@ -38,6 +38,11 @@ jobs:
             autopoint \
             gettext
 
+      - name: Accept Android SDK licenses
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;37.0.0"
+
       - name: Install Buildozer
         run: |
           python3 -m pip install --upgrade pip
