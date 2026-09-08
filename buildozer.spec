@@ -1,4 +1,6 @@
-[app]
+android.permissions = INTERNET,RECORD_AUDIO
+android.api = 35
+android.minapi = 23[app]
 
 title = Lala AI
 package.name = lalaai
@@ -23,3 +25,7 @@ android.minapi = 23
 
 log_level = 2
 warn_on_root = 1
+android.permissions = INTERNET,RECORD_AUDIO
+android.api = 35
+android.minapi = 23
+android.accept_sdk_license = True
