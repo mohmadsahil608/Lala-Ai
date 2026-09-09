@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Install system dependencies
         run: |
           sudo apt update
+
           sudo apt install -y \
             git \
             zip \
@@ -25,7 +27,12 @@ jobs:
             python3-pip \
             python3-virtualenv \
             autoconf \
+            automake \
+            autopoint \
+            gettext \
             libtool \
+            libltdl-dev \
+            libtool-bin \
             pkg-config \
             zlib1g-dev \
             libncurses5-dev \
@@ -33,60 +40,72 @@ jobs:
             libtinfo6 \
             cmake \
             libffi-dev \
-            libssl-dev \
-            automake \
-            autopoint \
-            gettext
+            libssl-dev
 
       - name: Install Buildozer
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install buildozer
+          python3 -m pip install buildozer==1.5.0
           python3 -m pip install cython==0.29.34
 
-      - name: Initialize Android SDK
+      - name: Prepare Android SDK
         run: |
           buildozer android debug || true
 
-      - name: Accept Android SDK licenses
+      - name: Find Android SDK
         run: |
           SDK_ROOT="$HOME/.buildozer/android/platform/android-sdk"
 
-          echo "Android SDK: $SDK_ROOT"
+          echo "SDK_ROOT=$SDK_ROOT"
 
           if [ ! -d "$SDK_ROOT" ]; then
-            echo "Android SDK directory not found"
+            echo "ERROR: Android SDK was not created."
             exit 1
           fi
 
           SDKMANAGER=$(find "$SDK_ROOT" -type f -name sdkmanager | head -n 1)
 
-          echo "sdkmanager: $SDKMANAGER"
-
           if [ -z "$SDKMANAGER" ]; then
-            echo "sdkmanager not found"
+            echo "ERROR: sdkmanager was not found."
             exit 1
           fi
 
-          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses
+          echo "SDKMANAGER=$SDKMANAGER"
+          echo "SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "SDKMANAGER=$SDKMANAGER" >> "$GITHUB_ENV"
+
+      - name: Accept Android SDK licenses
+        run: |
+          yes | "$SDKMANAGER" \
+            --sdk_root="$SDK_ROOT" \
+            --licenses || true
 
       - name: Install Android SDK components
         run: |
-          SDK_ROOT="$HOME/.buildozer/android/platform/android-sdk"
-          SDKMANAGER=$(find "$SDK_ROOT" -type f -name sdkmanager | head -n 1)
-
           "$SDKMANAGER" \
             --sdk_root="$SDK_ROOT" \
             "platform-tools" \
             "platforms;android-35" \
             "build-tools;35.0.0"
 
-      - name: Build APK
+      - name: Verify Android SDK
+        run: |
+          "$SDKMANAGER" \
+            --sdk_root="$SDK_ROOT" \
+            --list_installed
+
+      - name: Build Lala APK
         run: |
           buildozer android debug
+
+      - name: Find APK
+        run: |
+          echo "Generated APK files:"
+          find bin -type f -name "*.apk" -print
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Lala-AI-APK
           path: bin/*.apk
+          if-no-files-found: error
