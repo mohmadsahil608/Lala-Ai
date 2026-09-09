@@ -5,7 +5,7 @@ package.name = lalaai
 package.domain = org.lala
 
 source.dir = .
-source.include_exts = py,txt,png,jpg,kv
+source.include_exts = py,txt,png,jpg,jpeg,kv
 
 version = 1.0
 
@@ -15,10 +15,11 @@ orientation = portrait
 fullscreen = 0
 
 android.permissions = INTERNET,RECORD_AUDIO
+
 android.api = 35
 android.minapi = 23
-android.accept_sdk_license = True
 
+android.accept_sdk_license = True
 
 [buildozer]
 
